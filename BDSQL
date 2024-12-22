@@ -1,0 +1,115 @@
+CREATE TABLE IF NOT EXISTS public.client
+(
+    pass_num_cl bigint NOT NULL,     surname_cl character varying(16) COLLATE pg_catalog."default" NOT NULL,     name_cl character varying(16) COLLATE pg_catalog."default" NOT NULL,     middlename_cl character varying(16) COLLATE pg_catalog."default",     address_cl character varying(100) COLLATE pg_catalog."default" NOT NULL,     phone_num_cl bigint NOT NULL,
+    CONSTRAINT pk_client PRIMARY KEY (pass_num_cl)
+);
+CREATE TABLE IF NOT EXISTS public.concludes
+(
+    number_c integer NOT NULL,     pass_num_cl bigint NOT NULL,
+    CONSTRAINT pk_concludes PRIMARY KEY (number_c, pass_num_cl)
+);
+CREATE TABLE IF NOT EXISTS public.contract
+(
+    number_c serial NOT NULL,     pass_num_w bigint NOT NULL,     id_pr integer NOT NULL,     date_of_conclusion_c date NOT NULL,
+    type_of_transaction_c character varying(100) COLLATE pg_catalog."default" 
+NOT NULL,
+    amount_c integer NOT NULL,
+    CONSTRAINT pk_contract PRIMARY KEY (number_c)
+);
+CREATE TABLE IF NOT EXISTS public.financial_transactions
+(
+    id_ft serial NOT NULL,     pass_num_w bigint NOT NULL,
+    type_of_operation_fl character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    date_fl date NOT NULL,
+    title_transaction_fl character varying(100) COLLATE pg_catalog."default" NOT 
+NULL,
+    amount_fl integer NOT NULL,
+    CONSTRAINT pk_financial_transactions PRIMARY KEY (id_ft)
+);
+CREATE TABLE IF NOT EXISTS public.service
+(
+    title_ser character varying(100) COLLATE pg_catalog."default" NOT NULL,     type_ser character varying(100) COLLATE pg_catalog."default" NOT NULL,     CONSTRAINT pk_service PRIMARY KEY (title_ser)
+);
+CREATE TABLE IF NOT EXISTS public.services_provided
+(
+    id_pr serial NOT NULL,     pass_num_w bigint NOT NULL,
+    title_ser character varying(100) COLLATE pg_catalog."default" NOT NULL,     pass_num_cl bigint NOT NULL,
+    id_ft integer,
+    amount_pr integer NOT NULL,     date_reg_pr date NOT NULL,
+    CONSTRAINT pk_services_provided PRIMARY KEY (id_pr)
+);
+CREATE TABLE IF NOT EXISTS public.worker
+(
+    pass_num_w bigint NOT NULL,     surname_w character varying(16) COLLATE pg_catalog."default" NOT NULL,     name_w character varying(16) COLLATE pg_catalog."default" NOT NULL,     middlename_w character varying(16) COLLATE pg_catalog."default",     post_w character varying(100) COLLATE pg_catalog."default" NOT NULL,     departament_w character varying(100) COLLATE pg_catalog."default" NOT 
+NULL,
+    phone_num_w bigint NOT NULL,
+    password character varying(30) COLLATE pg_catalog."default",     role bigint,
+    CONSTRAINT pk_worker PRIMARY KEY (pass_num_w)
+);
+ALTER TABLE IF EXISTS public.concludes
+    ADD CONSTRAINT fk_conclude_concludes_client FOREIGN KEY 
+(pass_num_cl)
+    REFERENCES public.client (pass_num_cl) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS concludes2_fk
+    ON public.concludes(pass_num_cl);
+ALTER TABLE IF EXISTS public.concludes
+    ADD CONSTRAINT fk_conclude_concludes_contract FOREIGN KEY 
+(number_c)
+    REFERENCES public.contract (number_c) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS concludes_fk
+    ON public.concludes(number_c);
+ALTER TABLE IF EXISTS public.contract
+    ADD CONSTRAINT fk_contract_agreement_services FOREIGN KEY (id_pr)
+    REFERENCES public.services_provided (id_pr) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS agreement_fk
+    ON public.contract(id_pr);
+ALTER TABLE IF EXISTS public.contract
+    ADD CONSTRAINT fk_contract_certifies_worker FOREIGN KEY 
+(pass_num_w)
+    REFERENCES public.worker (pass_num_w) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS certifies_fk
+    ON public.contract(pass_num_w);
+ALTER TABLE IF EXISTS public.financial_transactions
+    ADD CONSTRAINT fk_financia_monitorin_worker FOREIGN KEY 
+(pass_num_w)
+    REFERENCES public.worker (pass_num_w) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS monitoring_fk     ON public.financial_transactions(pass_num_w);
+ALTER TABLE IF EXISTS public.services_provided
+    ADD CONSTRAINT fk_services_definitio_service FOREIGN KEY (title_ser)
+    REFERENCES public.service (title_ser) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS definition_fk
+    ON public.services_provided(title_ser);
+ALTER TABLE IF EXISTS public.services_provided
+    ADD CONSTRAINT fk_services_get_money_financia FOREIGN KEY (id_ft)
+    REFERENCES public.financial_transactions (id_ft) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS get_money_fk
+    ON public.services_provided(id_ft);
+ALTER TABLE IF EXISTS public.services_provided
+    ADD CONSTRAINT fk_services_order_client FOREIGN KEY (pass_num_cl)
+    REFERENCES public.client (pass_num_cl) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS order_fk
+    ON public.services_provided(pass_num_cl);
+ALTER TABLE IF EXISTS public.services_provided
+    ADD CONSTRAINT fk_services_register_worker FOREIGN KEY (pass_num_w)
+    REFERENCES public.worker (pass_num_w) MATCH SIMPLE
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS register_fk
+    ON public.services_provided(pass_num_w);
+END; 
